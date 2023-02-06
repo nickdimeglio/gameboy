@@ -1,110 +1,54 @@
-use pixels::{Error, Pixels, SurfaceTexture};
-use winit::{
-    dpi::LogicalSize,
-    event::{Event, VirtualKeyCode},
-    event_loop::{ControlFlow, EventLoop},
-    window::WindowBuilder,
-};
-use winit_input_helper::WinitInputHelper;
+use minifb::{Key, ScaleMode, Window, WindowOptions};
 
-const WIDTH: u32 = 160;
-const HEIGHT: u32 = 240;
+const WIDTH: usize = 640; 
+const HEIGHT: usize = 360;
 
-fn main() -> Result<(), Error> {
-    let event_loop = EventLoop::new();
-    let mut input = WinitInputHelper::new();
-    let window = {
-        let size = LogicalSize::new(WIDTH as f64, HEIGHT as f64);
-        WindowBuilder::new()
-            .with_title("Game Boy Color")
-            .with_inner_size(size)
-            .with_min_inner_size(size)
-            .build(&event_loop)
-            .unwrap()
-    };
+fn main() {
+    let mut window = Window::new(
+        "Welcome to the Game Boy!",
+        WIDTH,
+        HEIGHT,
+        WindowOptions {
+            resize: true,
+            scale_mode: ScaleMode::UpperLeft,
+            ..WindowOptions::default()
+        },
+    )
+    .expect("Unable to create window...")
 
-    let mut pixels = {
-        let window_size = window.inner_size();
-        let surface_texture =
-            SurfaceTexture::new(
-                window_size.width,
-                window_size.height,
-                &window
-            );
-        Pixels::new(WIDTH, HEIGHT, surface_texture)?
-    };
+    let mut buffer: Vec<u32> = Vec::with_capacity(WIDTH * HEIGHT);
+    let mut size = (0, 0);
 
-
-    let mut rgba = [0, 0, 0, 0];
-
-    event_loop.run(move |event, _, control_flow| {
-        
-        // Draw the current frame
-        if let Event::RedrawRequested(_) = event {
-            if pixels
-                .render()
-                .is_err()
-            {
-                *control_flow = ControlFlow::Exit;
-                return;
-            }
+    while window.is_open() && !window.is_key_down(Key::Escape) {
+        let new_size = (window.get_size().0, window.get_size().1);
+        if new_size != size {syn match    cCustomParen    "(" contains=cParen,cCppParen
+syn match    cCustomFunc     "\w\+\s*(" contains=cCustomParen
+syn match    cCustomScope    "::"
+syn match    cCustomClass    "\w\+\s*::" contains=cCustomScope
+syn match    cCustomProp     "\.\w\+\s*."
+            size = new_size;
+            buffer.resize(size.0 * size.1, 0);
         }
 
-        // Handle input events
-        if input.update(&event) {
+        let mut color: u32 = 0x0FFF;
 
-            // Close events
-            if input.key_pressed(VirtualKeyCode::Escape) || input.quit() {
-                *control_flow = ControlFlow::Exit;
-                return;
-            }
+        // Get user input
+        window.get_keys().iter().for_each(|key| match key {
+            Key::W => color = 0x0F00,
+            Key::A => color = 0x00F0,
+            Key::S => color = 0x000F,
+            Key::D => color = 0x0ABC,
+            _ => (),
+        });
 
-            // Resize the window
-            if let Some(size) = input.window_resized() {
-                pixels.resize_surface(size.width, size.height);
-            }
-
-            // Keyboard input
-            let mut draw = true;
-            if input.key_pressed(VirtualKeyCode::W) {
-                rgba = [0xFF, 0x00, 0x00, 0xFF];
-            }
-            else if input.key_pressed(VirtualKeyCode::A) {
-                rgba = [0x00, 0xFF, 0xFF, 0xFF];
-            }
-            else if input.key_pressed(VirtualKeyCode::S) {
-                rgba = [0x00, 0x00, 0xFF, 0xFF];
-            }
-            else if input.key_pressed(VirtualKeyCode::D) {
-                rgba = [0xF0, 0x50, 0x10, 0xFF];
-            }
-            else if input.key_pressed(VirtualKeyCode::N) {
-                rgba = [0x0A, 0xAA, 0x00, 0xFF];
-            }
-            else if input.key_pressed(VirtualKeyCode::J) {
-                rgba = [0x10, 0x10, 0x10, 0xFF];
-            }
-            else if input.key_pressed(VirtualKeyCode::M) {
-                rgba = [0xFF, 0xFF, 0xFF, 0xFF];
-            }
-            else if input.key_pressed(VirtualKeyCode::K) {
-                rgba = [0x0B, 0xCD, 0x02, 0xFF];
-            }
-            else {
-                draw = false;
-            }
-
-            // Render pixels
-            for pixel in pixels.get_frame_mut().chunks_exact_mut(4) {
-                pixel[0] = rgba[0];
-                pixel[1] = rgba[1];
-                pixel[2] = rgba[2];
-                pixel[3] = rgba[3];
-            }
-
-            pixels.render();
-        
+        // Update buffer
+        for pixel in buffer.iter_mut() {
+            *pixel = color;
         }
 
-    });
+        // Update window
+        window
+            .update_with_buffer(&buffer, new_size.0, new_size.1)
+            .unwrap();
+    }
 }
