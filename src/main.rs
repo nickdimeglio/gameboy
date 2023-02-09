@@ -1,7 +1,7 @@
 use minifb::{Key, ScaleMode, Window, WindowOptions};
 
-const WIDTH: usize = 640; 
-const HEIGHT: usize = 360;
+const WIDTH: usize = 320; 
+const HEIGHT: usize = 288;
 
 fn main() {
     let mut window = Window::new(
@@ -14,18 +14,15 @@ fn main() {
             ..WindowOptions::default()
         },
     )
-    .expect("Unable to create window...")
+    .expect("Unable to create window...");
 
-    let mut buffer: Vec<u32> = Vec::with_capacity(WIDTH * HEIGHT);
+    let mut pixels: Vec<u32> = Vec::from([0; WIDTH * HEIGHT]);
+    let mut buffer: Vec<u32> = Vec::from([0; WIDTH * HEIGHT]);
     let mut size = (0, 0);
 
     while window.is_open() && !window.is_key_down(Key::Escape) {
         let new_size = (window.get_size().0, window.get_size().1);
-        if new_size != size {syn match    cCustomParen    "(" contains=cParen,cCppParen
-syn match    cCustomFunc     "\w\+\s*(" contains=cCustomParen
-syn match    cCustomScope    "::"
-syn match    cCustomClass    "\w\+\s*::" contains=cCustomScope
-syn match    cCustomProp     "\.\w\+\s*."
+        if new_size != size {
             size = new_size;
             buffer.resize(size.0 * size.1, 0);
         }
@@ -41,9 +38,29 @@ syn match    cCustomProp     "\.\w\+\s*."
             _ => (),
         });
 
+        // Update pixels
+        for i in 0..(WIDTH * HEIGHT) {
+            let row = i / WIDTH;
+            let col = i % HEIGHT;
+            if ((row % 32 < 16) & (col % 32 < 16)) | ((row % 32 > 15) & (col % 32 > 15)) {
+                pixels[i] = color;
+            }
+        }
+
         // Update buffer
-        for pixel in buffer.iter_mut() {
-            *pixel = color;
+        let buffer_width = size.0;
+        let buffer_height = size.1;
+        for i in 0..(buffer_width * buffer_height) {
+
+            // Get relative x and y for this buffer pixel (0 to 1)
+            let x = (i % buffer_width) as f64 / buffer_width as f64;
+            let y = (i as f64 / buffer_width as f64) / buffer_height as f64;
+
+            // Calculate absolute position for gameboy pixel
+            let row = (y * HEIGHT as f64).floor() as usize;     // round down
+            let col = (x * WIDTH as f64).floor() as usize;      // round down
+            let pos = row * WIDTH + col;
+            buffer[i] = pixels[pos];
         }
 
         // Update window
