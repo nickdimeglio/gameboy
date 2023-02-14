@@ -1,15 +1,14 @@
 #![allow(unused_mut)]
-mod display;
+mod gameboy;
 
 use minifb::{Key, ScaleMode, Window, WindowOptions};
-use display::{Display, GameBoyScreen};
+use gameboy::{GameBoy};
 
 const CGB_WIDTH: usize = 320;
 const CGB_HEIGHT: usize = 288;
 
 fn main() {
-    let mut cgb_screen = GameBoyScreen::new();
-    let mut display = Display::new();
+    let mut gameboy = GameBoy::new();
 
     // Initialize emulator window
     let mut window = Window::new(
@@ -29,9 +28,9 @@ fn main() {
 
         // Resize screen if needed
         let new_size = (window.get_size().0, window.get_size().1);
-        if new_size != (display.width, display.height) {
-            (display.width, display.height) = new_size;
-            display.resize();
+        if new_size != (gameboy.display.width, gameboy.display.height) {
+            (gameboy.display.width, gameboy.display.height) = new_size;
+            gameboy.display.resize();
         }
 
         let mut color: u32 = 0x0FFF;
@@ -46,11 +45,11 @@ fn main() {
         });
 
         // Update display pixels
-        display.update(&cgb_screen);
+        gameboy.display.update(&gameboy.screen);
 
         // Update window
         window
-            .update_with_buffer(&display.pixels, display.width, display.height)
+            .update_with_buffer(&gameboy.display.pixels, gameboy.display.width, gameboy.display.height)
             .unwrap();
     }
 }
