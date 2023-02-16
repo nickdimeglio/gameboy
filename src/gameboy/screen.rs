@@ -26,4 +26,14 @@ impl GameBoyScreen {
             pixels: pixels,
         }
     }
+
+    pub fn change_color(&mut self, color: u32) {
+        for i in 0..(self.width * self.height) {
+            let row = i / self.width;
+            let col = i % self.height;
+            if ((row % 32 < 16) & (col % 32 < 16)) | ((row % 32 > 15) & (col % 32 > 15)) {
+                self.pixels[i] = color;
+            }
+        }
+    }
 }
