@@ -1,10 +1,9 @@
 #![allow(unused_mut)]
 mod gameboy;
+mod tests;
 
-use std::fs::File;
 use std::fs::read;
 use std::io;
-use std::io::Read;
 use minifb::{Key, ScaleMode, Window, WindowOptions};
 use gameboy::{GameBoy};
 
@@ -31,18 +30,15 @@ fn main() -> io::Result<()> {
     // Read in the ROM
     let path = "./roms/pokemon-yellow.gbc";
     let rom = read(path)?;
-    for i in 0..rom.len() {
-        if i % 10 == 0 {
-            println!("{:x}:  {:x}", i, rom[i]);
-        } else {
-            println!("        {:x}", rom[i]);
-        }
-    }
 
     // Begin Fetch-Decode-Execute loop
     while window.is_open() && !window.is_key_down(Key::Escape) {
 
         // Fetch next instruction
+        if gameboy.cpu.registers.PC < rom.len() {
+            let instruction = rom[gameboy.cpu.registers.PC];
+            gameboy.cpu.execute(instruction, &mut gameboy.memory);
+        }
 
         // Resize screen if needed
         let new_size = (window.get_size().0, window.get_size().1);
