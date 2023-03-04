@@ -32,11 +32,58 @@ impl GameBoyCPU {
      *  REGISTER GETTERS AND SETTERS 
      *
     */
+
+    pub fn get_AF(&self) -> u16 {
+        self.registers.AF
+    }
+
+    pub fn get_BC(&self) -> u16 {
+        self.registers.BC
+    }
+
+    pub fn get_DE(&self) -> u16 {
+        self.registers.DE
+    }
+
+    pub fn get_HL(&self) -> u16 {
+        self.registers.HL
+    }
+
+    pub fn get_SP(&self) -> u16 {
+        self.registers.SP
+    }
+
+    pub fn get_PC(&self) -> usize {
+        self.registers.PC
+    }
+   
+    pub fn set_AF(&mut self, val: u16) {
+        self.registers.AF = val;
+    }
+
+    pub fn set_BC(&mut self, val: u16) {
+        self.registers.BC = val;
+    }
+
+    pub fn set_DE(&mut self, val: u16) {
+        self.registers.DE = val;
+    }
+
+    pub fn set_HL(&mut self, val: u16) {
+        self.registers.HL = val;
+    }
+
+    pub fn set_SP(&mut self, val: u16) {
+        self.registers.SP = val;
+    }
+
+    pub fn set_PC(&mut self, address: usize) {
+        self.registers.PC = address;
+    }
    
     pub fn get_A(&self) -> u8 {
         (self.registers.AF >> 8) as u8
     }
-
     pub fn set_A(&mut self, val: u8) {
         self.registers.AF = ((val as u16) << 8) | (self.registers.AF & 0x00FF);
     }
@@ -106,7 +153,7 @@ impl GameBoyCPU {
             0xCB => self.cb_prefix(),
 
             // 8-bit load/store/move
-            0x40..=0x7F => self.load_X_Y(instruction),
+            0x40..=0x7F => self.load_X_Y(instruction, memory),
 
             // Unknown opcode
             _    => self.unknown(),
@@ -129,7 +176,7 @@ impl GameBoyCPU {
         String::from("PREFIX CB")
     }
 
-    fn load_X_Y(&mut self, instruction: u8) -> String {
+    fn load_X_Y(&mut self, instruction: u8, memory: &mut GameBoyMemory) -> String {
 
         // Loading from which address?
         let Y = match (instruction & 0xF) % 8 {
@@ -139,7 +186,9 @@ impl GameBoyCPU {
             0x3 => self.get_E(),    // LD X, E
             0x4 => self.get_H(),    // LD X, H
             0x5 => self.get_L(),    // LD X, L
-            0x6 => self.get_B(),    // TODO: UNDERSTAND LD X, HL
+            0x6 => {                // LD X, mem[HL]
+                memory.read(self.get_HL() as usize)
+            },
             0x7 => self.get_A(),    // LD X, A
             _ => self.get_B()       // UKNOWN OPCODE 
         };

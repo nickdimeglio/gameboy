@@ -35,10 +35,11 @@ fn main() -> io::Result<()> {
     while window.is_open() && !window.is_key_down(Key::Escape) {
 
         // Fetch next instruction
-        if gameboy.cpu.registers.PC < rom.len() {
-            let instruction = rom[gameboy.cpu.registers.PC];
-            gameboy.cpu.execute(instruction, &mut gameboy.memory);
+        let pc = gameboy.cpu.get_PC();
+        if pc < rom.len() {
+            gameboy.cpu.execute(rom[pc], &mut gameboy.memory);
         }
+        // TODO: invalid PC handling
 
         // Resize screen if needed
         let new_size = (window.get_size().0, window.get_size().1);
