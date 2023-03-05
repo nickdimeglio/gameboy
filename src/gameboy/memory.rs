@@ -12,7 +12,7 @@ impl GameBoyMemory {
             self.memory[address]
         }
         else {
-            0 as u8
+            0u8
         }   // TODO: Invalid access handling
     }
 
@@ -22,3 +22,4 @@ impl GameBoyMemory {
         }
     }
 }
+

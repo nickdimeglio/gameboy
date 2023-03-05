@@ -1,7 +1,6 @@
 #![allow(unused_mut)]
 mod gameboy;
 mod tests;
-
 use std::fs::read;
 use std::io;
 use minifb::{Key, ScaleMode, Window, WindowOptions};
@@ -38,6 +37,7 @@ fn main() -> io::Result<()> {
         let pc = gameboy.cpu.get_PC();
         if pc < rom.len() {
             gameboy.cpu.execute(rom[pc], &mut gameboy.memory);
+            gameboy.cpu.set_PC(gameboy.cpu.get_PC() + 1);
         }
         // TODO: invalid PC handling
 
