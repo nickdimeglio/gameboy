@@ -138,7 +138,17 @@ mod tests {
 
     }
 
-    // TODO:    LD B, HL
+    #[test]
+    fn load_B_HL() {
+        let mut gb: GameBoy = GameBoy::new();
+
+        // LD B, mem[HL]
+        assert_ne!(gb.cpu.get_B(), 0xD);
+        gb.memory.write(0xABAB, 0xD);
+        gb.cpu.set_HL(0xABAB);
+        gb.cpu.execute(0x46, &mut gb.memory);
+        assert_eq!(gb.cpu.get_B(), 0xD);
+    }
 
     #[test]
     fn load_B_A() {
@@ -225,7 +235,18 @@ mod tests {
 
     }
 
-    // TODO LD C, HL
+    #[test]
+    fn load_C_HL() {
+        let mut gb: GameBoy = GameBoy::new();
+
+        // LD C, mem[HL]
+        assert_ne!(gb.cpu.get_C(), 0xF);
+        gb.memory.write(0xABAB, 0xF);
+        gb.cpu.set_HL(0xABAB);
+        gb.cpu.execute(0x4E, &mut gb.memory);
+        assert_eq!(gb.cpu.get_C(), 0xF);
+    }
+
 
     #[test]
     fn load_C_A() {
@@ -312,7 +333,17 @@ mod tests {
 
     }
 
-    // TODO LD D, HL
+    #[test]
+    fn load_D_HL() {
+        let mut gb: GameBoy = GameBoy::new();
+
+        // LD D, mem[HL]
+        assert_ne!(gb.cpu.get_D(), 0x2);
+        gb.memory.write(0xABAB, 0x2);
+        gb.cpu.set_HL(0xABAB);
+        gb.cpu.execute(0x56, &mut gb.memory);
+        assert_eq!(gb.cpu.get_D(), 0x2);
+    }
 
     #[test]
     fn load_D_A() {
@@ -399,7 +430,17 @@ mod tests {
 
     }
 
-    // TODO LD E, HL
+    #[test]
+    fn load_E_HL() {
+        let mut gb: GameBoy = GameBoy::new();
+
+        // LD E, mem[HL]
+        assert_ne!(gb.cpu.get_E(), 0x3);
+        gb.memory.write(0xABAB, 0x3);
+        gb.cpu.set_HL(0xABAB);
+        gb.cpu.execute(0x5E, &mut gb.memory);
+        assert_eq!(gb.cpu.get_E(), 0x3);
+    }
 
     #[test]
     fn load_E_A() {
@@ -486,7 +527,17 @@ mod tests {
 
     }
 
-    // TODO: LD H, HL
+    #[test]
+    fn load_H_HL() {
+        let mut gb: GameBoy = GameBoy::new();
+
+        // LD H, mem[HL]
+        assert_ne!(gb.cpu.get_H(), 0x9);
+        gb.memory.write(0xABA9, 0x9);
+        gb.cpu.set_HL(0xABA9);
+        gb.cpu.execute(0x66, &mut gb.memory);
+        assert_eq!(gb.cpu.get_H(), 0x9);
+    }
 
     #[test]
     fn load_H_A() {
@@ -573,7 +624,17 @@ mod tests {
 
     }
 
-    // TODO:    LD L, HL
+    #[test]
+    fn load_L_HL() {
+        let mut gb: GameBoy = GameBoy::new();
+
+        // LD L, mem[HL]
+        assert_ne!(gb.cpu.get_L(), 0xD);
+        gb.memory.write(0xABA9, 0xD);
+        gb.cpu.set_HL(0xABA9);
+        gb.cpu.execute(0x6E, &mut gb.memory);
+        assert_eq!(gb.cpu.get_L(), 0xD);
+    }
 
     #[test]
     fn load_L_A() {
@@ -592,15 +653,96 @@ mod tests {
      *
     */
 
-    // TODO: LD (HL), B
-    // TODO: LD (HL), C
-    // TODO: LD (HL), D
-    // TODO: LD (HL), E
-    // TODO: LD (HL), H
-    // TODO: LD (HL), L
+    #[test]
+    fn load_HL_B() {
+        let mut gb: GameBoy = GameBoy::new();
+
+        // LD HL, B
+        gb.memory.write(0xABAB, 0x9);
+        gb.cpu.set_HL(0xABAB);
+        gb.cpu.set_B(0xF);
+        assert_ne!(gb.memory.read(0xABAB), 0xF);
+        gb.cpu.execute(0x70, &mut gb.memory);
+        assert_eq!(gb.memory.read(0xABAB), 0xF);
+    }
+
+    #[test]
+    fn load_HL_C() {
+        let mut gb: GameBoy = GameBoy::new();
+
+        // LD HL, C
+        gb.memory.write(0x1010, 0xB);
+        gb.cpu.set_HL(0x1010);
+        gb.cpu.set_C(0xA);
+        assert_ne!(gb.memory.read(0x1010), 0xA);
+        gb.cpu.execute(0x71, &mut gb.memory);
+        assert_eq!(gb.memory.read(0x1010), 0xA);
+    }
+
+    #[test]
+    fn load_HL_D() {
+        let mut gb: GameBoy = GameBoy::new();
+
+        // LD HL, D
+        gb.memory.write(0x1212, 0xC);
+        gb.cpu.set_HL(0x1212);
+        gb.cpu.set_D(0xB);
+        assert_ne!(gb.memory.read(0x1212), 0xB);
+        gb.cpu.execute(0x72, &mut gb.memory);
+        assert_eq!(gb.memory.read(0x1212), 0xB);
+    }
+   
+    #[test]
+    fn load_HL_E() {
+        let mut gb: GameBoy = GameBoy::new();
+
+        // LD HL, E
+        gb.memory.write(0x1505, 0xD);
+        gb.cpu.set_HL(0x1505);
+        gb.cpu.set_E(0xF);
+        assert_ne!(gb.memory.read(0x1505), 0xF);
+        gb.cpu.execute(0x73, &mut gb.memory);
+        assert_eq!(gb.memory.read(0x1505), 0xF);
+    }
+
+    #[test]
+    fn load_HL_H() {
+        let mut gb: GameBoy = GameBoy::new();
+
+        // LD HL, H
+        gb.memory.write(0xBAAA, 0xAB);
+        gb.cpu.set_HL(0xBAAA);
+        assert_ne!(gb.memory.read(0xBAAA), 0xBA);
+        gb.cpu.execute(0x74, &mut gb.memory);
+        assert_eq!(gb.memory.read(0xBAAA), 0xBA);
+    }
+
+    #[test]
+    fn load_HL_L() {
+        let mut gb: GameBoy = GameBoy::new();
+
+        // LD HL, L
+        gb.memory.write(0xBAAA, 0xAB);
+        gb.cpu.set_HL(0xBAAA);
+        assert_ne!(gb.memory.read(0xBAAA), 0xAA);
+        gb.cpu.execute(0x75, &mut gb.memory);
+        assert_eq!(gb.memory.read(0xBAAA), 0xAA);
+    }
+
     // TODO: HALT
-    // TODO: LD (HL), A
-    
+   
+    #[test]
+    fn load_HL_A() {
+        let mut gb: GameBoy = GameBoy::new();
+
+        // LD HL, A
+        gb.memory.write(0xBBBB, 0xAB);
+        gb.cpu.set_HL(0xBBBB);
+        gb.cpu.set_A(0xFF);
+        assert_ne!(gb.memory.read(0xBBBB), 0xFF);
+        gb.cpu.execute(0x77, &mut gb.memory);
+        assert_eq!(gb.memory.read(0xBBBB), 0xFF);
+    }
     
     /*  EIGHT BIT LOADS INTO A
      *
@@ -680,3 +822,4 @@ mod tests {
     }
 
 }
+
