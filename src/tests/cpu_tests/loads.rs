@@ -9,13 +9,149 @@ mod tests {
         (gb, rom)
     }
 
-    /*  EIGHT BIT LOADS INTO B
-     *
-     *
-    */
+    #[test]
+    fn op_0x06() {
+        let (mut gb, rom) = setup();
+
+        // LD B, D8
+        gb.cpu.set_PC(0x0); 
+        assert_ne!(gb.cpu.get_B(), 0x22);
+        gb.cpu.execute(0x06, &rom, &mut gb.memory);
+        assert_eq!(gb.cpu.get_B(), 0x22);
+    }
 
     #[test]
-    fn load_B_B() {
+    fn op_0x0A() {
+        let (mut gb, rom) = setup();
+
+        // LD A, (BC)
+        gb.cpu.set_BC(0xAB12); 
+        gb.memory.write(0xAB12, 0xFD);
+        assert_ne!(gb.cpu.get_A(), gb.memory.read(gb.cpu.get_BC() as usize));
+        gb.cpu.execute(0x0A, &rom, &mut gb.memory);
+        assert_eq!(gb.cpu.get_A(), gb.memory.read(gb.cpu.get_BC() as usize));
+    }
+
+    #[test]
+    fn op_0x0E() {
+        let (mut gb, rom) = setup();
+
+        // LD C, D8
+        gb.cpu.set_PC(0x0); 
+        assert_ne!(gb.cpu.get_C(), 0x22);
+        gb.cpu.execute(0x0E, &rom, &mut gb.memory);
+        assert_eq!(gb.cpu.get_C(), 0x22);
+    }
+
+    #[test]
+    fn op_0x16() {
+        let (mut gb, rom) = setup();
+
+        // LD D D8
+        gb.cpu.set_PC(0x0); 
+        assert_ne!(gb.cpu.get_D(), 0x22);
+        gb.cpu.execute(0x16, &rom, &mut gb.memory);
+        assert_eq!(gb.cpu.get_D(), 0x22);
+    }
+
+    #[test]
+    fn op_0x1A() {
+        let (mut gb, rom) = setup();
+
+        // LD A, (DE)
+        gb.cpu.set_DE(0xAB12); 
+        gb.memory.write(0xAB12, 0x99);
+        assert_ne!(gb.cpu.get_A(), gb.memory.read(gb.cpu.get_DE() as usize));
+        gb.cpu.execute(0x1A, &rom, &mut gb.memory);
+        assert_eq!(gb.cpu.get_A(), gb.memory.read(gb.cpu.get_DE() as usize));
+    }
+
+    #[test]
+    fn op_0x1E() {
+        let (mut gb, rom) = setup();
+
+        // LD E, D8
+        gb.cpu.set_PC(0x0); 
+        assert_ne!(gb.cpu.get_E(), 0x22);
+        gb.cpu.execute(0x1E, &rom, &mut gb.memory);
+        assert_eq!(gb.cpu.get_E(), 0x22);
+    }
+
+    #[test]
+    fn op_0x26() {
+        let (mut gb, rom) = setup();
+
+        // LD H D8
+        gb.cpu.set_PC(0x0); 
+        assert_ne!(gb.cpu.get_H(), 0x22);
+        gb.cpu.execute(0x26, &rom, &mut gb.memory);
+        assert_eq!(gb.cpu.get_H(), 0x22);
+    }
+
+    #[test]
+    fn op_0x2A() {
+        let (mut gb, rom) = setup();
+
+        // LD A, (HL+)
+        gb.cpu.set_HL(0xAB12); 
+        gb.memory.write(0xAB12, 0x76);
+        assert_ne!(gb.cpu.get_A(), 0x76);
+        assert_ne!(gb.cpu.get_HL(), 0xAB13);
+        gb.cpu.execute(0x2A, &rom, &mut gb.memory);
+        assert_eq!(gb.cpu.get_A(), 0x76);
+        assert_eq!(gb.cpu.get_HL(), 0xAB13);
+    }
+
+    #[test]
+    fn op_0x2E() {
+        let (mut gb, rom) = setup();
+
+        // LD L, D8
+        gb.cpu.set_PC(0x0); 
+        assert_ne!(gb.cpu.get_L(), 0x22);
+        gb.cpu.execute(0x2E, &rom, &mut gb.memory);
+        assert_eq!(gb.cpu.get_L(), 0x22);
+    }
+
+    #[test]
+    fn op_0x36() {
+        let (mut gb, rom) = setup();
+
+        // LD (HL) D8
+        gb.cpu.set_HL(0xAB12); 
+        gb.cpu.set_PC(0x0); 
+        assert_ne!(gb.memory.read(gb.cpu.get_HL() as usize), 0x22);
+        gb.cpu.execute(0x36, &rom, &mut gb.memory);
+        assert_eq!(gb.memory.read(gb.cpu.get_HL() as usize), 0x22);
+    }
+
+    #[test]
+    fn op_0x3A() {
+        let (mut gb, rom) = setup();
+
+        // LD A, (HL-)
+        gb.cpu.set_HL(0xAB10); 
+        gb.memory.write(0xAB10, 0x70);
+        assert_ne!(gb.cpu.get_A(), 0x70);
+        assert_ne!(gb.cpu.get_HL(), 0xAB0F);
+        gb.cpu.execute(0x3A, &rom, &mut gb.memory);
+        assert_eq!(gb.cpu.get_A(), 0x70);
+        assert_eq!(gb.cpu.get_HL(), 0xAB0F);
+    }
+
+    #[test]
+    fn op_0x3E() {
+        let (mut gb, rom) = setup();
+
+        // LD A, D8
+        gb.cpu.set_PC(0x0); 
+        assert_ne!(gb.cpu.get_A(), 0x22);
+        gb.cpu.execute(0x3E, &rom, &mut gb.memory);
+        assert_eq!(gb.cpu.get_A(), 0x22);
+    }
+
+    #[test]
+    fn op_0x40() {
         let (mut gb, rom) = setup();
 
         // LD C, B
@@ -26,7 +162,7 @@ mod tests {
     }
 
     #[test]
-    fn load_B_C() {
+    fn op_0x41() {
         let (mut gb, rom) = setup();
 
         // LD C, C
@@ -38,7 +174,7 @@ mod tests {
 
 
     #[test]
-    fn load_B_D() {
+    fn op_0x42() {
         let (mut gb, rom) = setup();
 
         // LD C, D
@@ -49,7 +185,7 @@ mod tests {
     }
 
     #[test]
-    fn load_B_E() {
+    fn op_0x43() {
         let (mut gb, rom) = setup();
 
         // LD C, E
@@ -60,7 +196,7 @@ mod tests {
     }
 
     #[test]
-    fn load_B_H() {
+    fn op_0x44() {
         let (mut gb, rom) = setup();
 
         // LD C, H
@@ -71,7 +207,7 @@ mod tests {
     }
 
     #[test]
-    fn load_B_L() {
+    fn op_0x45() {
         let (mut gb, rom) = setup();
 
         // LD C, L
@@ -83,7 +219,7 @@ mod tests {
     }
 
     #[test]
-    fn load_B_HL() {
+    fn op_0x46() {
         let (mut gb, rom) = setup();
 
         // LD B, mem[HL]
@@ -95,7 +231,7 @@ mod tests {
     }
 
     #[test]
-    fn load_B_A() {
+    fn op_0x47() {
         let (mut gb, rom) = setup();
 
         // LD C, A
@@ -112,7 +248,7 @@ mod tests {
     */
 
     #[test]
-    fn load_C_B() {
+    fn op_0x48() {
         let (mut gb, rom) = setup();
 
         // LD C, B
@@ -123,7 +259,7 @@ mod tests {
     }
 
     #[test]
-    fn load_C_C() {
+    fn op_0x49() {
         let (mut gb, rom) = setup();
 
         // LD C, C
@@ -135,7 +271,7 @@ mod tests {
 
 
     #[test]
-    fn load_C_D() {
+    fn op_0x4A() {
         let (mut gb, rom) = setup();
 
         // LD C, D
@@ -146,7 +282,7 @@ mod tests {
     }
 
     #[test]
-    fn load_C_E() {
+    fn op_0x4B() {
         let (mut gb, rom) = setup();
 
         // LD C, E
@@ -157,7 +293,7 @@ mod tests {
     }
 
     #[test]
-    fn load_C_H() {
+    fn op_0x4C() {
         let (mut gb, rom) = setup();
 
         // LD C, H
@@ -168,7 +304,7 @@ mod tests {
     }
 
     #[test]
-    fn load_C_L() {
+    fn op_0x4D() {
         let (mut gb, rom) = setup();
 
         // LD C, L
@@ -180,7 +316,7 @@ mod tests {
     }
 
     #[test]
-    fn load_C_HL() {
+    fn op_0x4E() {
         let (mut gb, rom) = setup();
 
         // LD C, mem[HL]
@@ -193,7 +329,7 @@ mod tests {
 
 
     #[test]
-    fn load_C_A() {
+    fn op_0x4F() {
         let (mut gb, rom) = setup();
 
         // LD C, A
@@ -210,7 +346,7 @@ mod tests {
     */
 
     #[test]
-    fn load_D_B() {
+    fn op_0x50() {
         let (mut gb, rom) = setup();
 
         // LD D, B
@@ -221,7 +357,7 @@ mod tests {
     }
 
     #[test]
-    fn load_D_C() {
+    fn op_0x51() {
         let (mut gb, rom) = setup();
 
         // LD D, C
@@ -233,7 +369,7 @@ mod tests {
 
 
     #[test]
-    fn load_D_D() {
+    fn op_0x52() {
         let (mut gb, rom) = setup();
 
         // LD D, D
@@ -244,7 +380,7 @@ mod tests {
     }
 
     #[test]
-    fn load_D_E() {
+    fn op_0x53() {
         let (mut gb, rom) = setup();
 
         // LD D, E
@@ -255,7 +391,7 @@ mod tests {
     }
 
     #[test]
-    fn load_D_H() {
+    fn op_0x54() {
         let (mut gb, rom) = setup();
 
         // LD D, H
@@ -266,7 +402,7 @@ mod tests {
     }
 
     #[test]
-    fn load_D_L() {
+    fn op_0x55() {
         let (mut gb, rom) = setup();
 
         // LD D, L
@@ -278,7 +414,7 @@ mod tests {
     }
 
     #[test]
-    fn load_D_HL() {
+    fn op_0x56() {
         let (mut gb, rom) = setup();
 
         // LD D, mem[HL]
@@ -290,7 +426,7 @@ mod tests {
     }
 
     #[test]
-    fn load_D_A() {
+    fn op_0x57() {
         let (mut gb, rom) = setup();
 
         // LD D, A
@@ -307,7 +443,7 @@ mod tests {
     */
 
     #[test]
-    fn load_E_B() {
+    fn op_0x58() {
         let (mut gb, rom) = setup();
 
         // LD E, B
@@ -318,7 +454,7 @@ mod tests {
     }
 
     #[test]
-    fn load_E_C() {
+    fn op_0x59() {
         let (mut gb, rom) = setup();
 
         // LD E, C
@@ -330,7 +466,7 @@ mod tests {
 
 
     #[test]
-    fn load_E_D() {
+    fn op_0x5A() {
         let (mut gb, rom) = setup();
 
         // LD E, D
@@ -341,7 +477,7 @@ mod tests {
     }
 
     #[test]
-    fn load_E_E() {
+    fn op_0x5B() {
         let (mut gb, rom) = setup();
 
         // LD E, E
@@ -352,7 +488,7 @@ mod tests {
     }
 
     #[test]
-    fn load_E_H() {
+    fn op_0x5C() {
         let (mut gb, rom) = setup();
 
         // LD E, H
@@ -363,7 +499,7 @@ mod tests {
     }
 
     #[test]
-    fn load_E_L() {
+    fn op_0x5D() {
         let (mut gb, rom) = setup();
 
         // LD E, L
@@ -375,7 +511,7 @@ mod tests {
     }
 
     #[test]
-    fn load_E_HL() {
+    fn op_0x5E() {
         let (mut gb, rom) = setup();
 
         // LD E, mem[HL]
@@ -387,7 +523,7 @@ mod tests {
     }
 
     #[test]
-    fn load_E_A() {
+    fn op_0x5F() {
         let (mut gb, rom) = setup();
 
         // LD E, A
@@ -866,5 +1002,96 @@ mod tests {
         assert_eq!(gb.memory.read(0x3322), gb.cpu.get_A());
     }
 
+    #[test]
+    fn op_0xF0() {
+        let (mut gb, rom) = setup();
+    
+        // LDH A, (a8)
+        gb.cpu.set_PC(0x0); 
+        gb.memory.write(0xFF22, 0xFD);
+        assert_ne!(gb.cpu.get_A(), 0xFD);
+        gb.cpu.execute(0xF0, &rom, &mut gb.memory);
+        assert_eq!(gb.cpu.get_A(), 0xFD);
+    }
+
+    #[test]
+    fn op_0xF2() {
+        let (mut gb, rom) = setup();
+    
+        // LD A, (C)
+        gb.cpu.set_C(0x37);
+        gb.memory.write(0xFF37, 0x99);
+        assert_ne!(gb.cpu.get_A(), 0x99);
+        gb.cpu.execute(0xF2, &rom, &mut gb.memory);
+        assert_eq!(gb.cpu.get_A(), 0x99);
+    }
+
+    #[test]
+    fn op_0xFA() {
+        let (mut gb, rom) = setup();
+    
+        // LD A, (a16)
+        gb.cpu.set_PC(0x0);
+        gb.memory.write(0x3322, 0x87);
+        assert_ne!(gb.cpu.get_A(), 0x87);
+        gb.cpu.execute(0xFA, &rom, &mut gb.memory);
+        assert_eq!(gb.cpu.get_A(), 0x87);
+    }
+
+    #[test]
+    fn load_D_d8() {
+    }
+
+    #[test]
+    fn load_H_d8() {
+    }
+
+    #[test]
+    fn load_indirect_HL_d8() {
+    }
+
+    #[test]
+    fn load_A_indirect_BC() {
+    }
+
+    #[test]
+    fn load_A_indirect_DE() {
+    }
+
+    #[test]
+    fn load_A_indirect_HL_inc() {
+    }
+
+    #[test]
+    fn load_A_indirect_HL_dec() {
+    }
+
+    #[test]
+    fn load_C_d8() {
+    }
+
+    #[test]
+    fn load_E_d8() {
+    }
+
+    #[test]
+    fn load_L_d8() {
+    }
+
+    #[test]
+    fn load_A_d8() {
+    }
+
+    #[test]
+    fn load_high_A_indirect_a8() {
+    }
+
+    #[test]
+    fn load_A_indirect_C() {
+    }
+
+    #[test]
+    fn load_A_indirect_a16() {
+    }
 }
 

@@ -40,5 +40,27 @@ mod tests {
         assert_eq!("LD X, Y", gb.cpu.execute(0xE1, &rom, &mut gb.memory));
         assert_eq!("LD X, Y", gb.cpu.execute(0xEA, &rom, &mut gb.memory));
     }
+
+    #[test]
+    fn loads_from_indirect() {
+        let (mut gb, rom) = setup();
+        gb.cpu.set_PC(0x2);
+        assert_eq!("LD X, Y", gb.cpu.execute(0x06, &rom, &mut gb.memory));
+        assert_eq!("LD X, Y", gb.cpu.execute(0x16, &rom, &mut gb.memory));
+        assert_eq!("LD X, Y", gb.cpu.execute(0x26, &rom, &mut gb.memory));
+        assert_eq!("LD X, Y", gb.cpu.execute(0x36, &rom, &mut gb.memory));
+        assert_eq!("LD X, Y", gb.cpu.execute(0x0A, &rom, &mut gb.memory));
+        assert_eq!("LD X, Y", gb.cpu.execute(0x1A, &rom, &mut gb.memory));
+        assert_eq!("LD X, Y", gb.cpu.execute(0x2A, &rom, &mut gb.memory));
+        assert_eq!("LD X, Y", gb.cpu.execute(0x3A, &rom, &mut gb.memory));
+        assert_eq!("LD X, Y", gb.cpu.execute(0x0E, &rom, &mut gb.memory));
+        assert_eq!("LD X, Y", gb.cpu.execute(0x1E, &rom, &mut gb.memory));
+        assert_eq!("LD X, Y", gb.cpu.execute(0x2E, &rom, &mut gb.memory));
+        assert_eq!("LD X, Y", gb.cpu.execute(0x3E, &rom, &mut gb.memory));
+        assert_eq!("LD X, Y", gb.cpu.execute(0xF0, &rom, &mut gb.memory));
+        assert_eq!("LD X, Y", gb.cpu.execute(0xF2, &rom, &mut gb.memory));
+        assert_eq!("LD X, Y", gb.cpu.execute(0xFA, &rom, &mut gb.memory));
+
+    }
 }
 
