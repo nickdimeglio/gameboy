@@ -27,7 +27,7 @@ impl GameBoyCPU {
         }
     }
 
-    pub fn execute(&mut self, instruction: u8, memory: &mut GameBoyMemory) -> String {
+    pub fn execute(&mut self, instruction: u8, rom: &Vec<u8>, memory: &mut GameBoyMemory) -> String {
 
         // Decode
         let mut operation = match instruction {
@@ -38,7 +38,7 @@ impl GameBoyCPU {
             i if 0x40 <= i && i < 0x80
                  ||
                  (i & 0xF == 0x2 || i & 0xF0 == 0xE0) && i != 0xF2
-                => self.load_X_Y(instruction, memory),
+                => self.load_X_Y(instruction, rom, memory),
 
             // Unknown opcode
             _    => self.unknown(),
@@ -48,12 +48,10 @@ impl GameBoyCPU {
             println!("0x{:0>4x} --- {:0>2x} {:}", self.get_PC(), instruction, operation);
         };
 
-        self.set_PC(self.get_PC() + 1);
-
         operation
     }
 
-    fn load_X_Y(&mut self, instruction: u8, memory: &mut GameBoyMemory) -> String {
+    fn load_X_Y(&mut self, instruction: u8, rom: &Vec<u8>, memory: &mut GameBoyMemory) -> String {
         match instruction {
             // Typical 8-bit loads
             i if 0x40 <= i && i <= 0x7F => { 
@@ -88,7 +86,7 @@ impl GameBoyCPU {
                 }
             }
             
-            // Loads from A (indirect HL)
+            // Loads from A (indirect)
             i if (i & 0xF == 2 || i & 0xF0 == 0xE0) && i != 0xF2 => {
                 let X = match (instruction & 0xF0) >> 4 {
                     0x0 => self.get_BC(),    // LD (BC), A
@@ -104,14 +102,14 @@ impl GameBoyCPU {
                     0xE => match instruction & 0xF {
                         0x0 => {            // LD (a8), A
                             self.set_PC(self.get_PC() + 1);
-                            0xFF00 + memory.read(self.get_PC() as usize) as u16
+                            0xFF00 + rom[self.get_PC() as usize] as u16
                         },
-                        0x2 => self.get_C() as u16,    // LD (C), A
+                        0x2 => 0xFF00 + self.get_C() as u16,    // LD (C), A
                         0xA => {            // LD (a16), A
                             self.set_PC(self.get_PC() + 2);
-                            ((memory.read(self.get_PC() as usize) as u16) << 8)
+                            ((rom[self.get_PC() as usize] as u16) << 8)
                             + 
-                            memory.read((self.get_PC() - 1) as usize) as u16
+                            (rom[self.get_PC() - 1 as usize]) as u16
                         }.into(),
                         _ => 0,  // Unknown
                     }.into(),
