@@ -8,6 +8,7 @@ pub struct Registers {
     HL: u16,
     SP: u16,
     PC: usize,
+    F: u8
 }
 
 pub struct GameBoyCPU {
@@ -22,7 +23,8 @@ impl GameBoyCPU {
             registers: Registers { 
                             AF: 0, BC: 0, 
                             DE: 0, HL: 0, 
-                            SP: 0, PC: 0x0100 },
+                            SP: 0, PC: 0x0100,
+                            F: 0},
             debug_mode: true,
         }
     }
@@ -37,8 +39,23 @@ impl GameBoyCPU {
             // 8-bit load/store/move
             i if 0x40 <= i && i < 0x80
                  ||
-                 (i & 0xF == 0x2 || i & 0xF0 == 0xE0) && i != 0xF2
-                => self.load_X_Y(instruction, rom, memory),
+                 (i & 0xF == 0x2 || i == 0xEA || i == 0xE0)
+                 ||
+                 (i & 0xF0 < 0x40 && (i & 0xF == 0x6 
+                                      || i & 0xF == 0xA 
+                                      || i & 0xF == 0xE))
+                 ||
+                 (i & 0xF0 == 0xF0 && (i & 0xF == 0x0
+                                       || i & 0xF == 0x2
+                                       || i & 0xF == 0xA))
+                => self.load_8(instruction, rom, memory),
+
+            // 16-bit load/store/move
+            0x01 | 0x11 | 0x21 | 0x31 | 0xC1 | 
+            0xD1 | 0xE1 | 0xF1 | 0xC5 | 0xD5 |
+            0xE5 | 0xF5 | 0x08 | 0xF8 | 0xF9
+                => self.load_16(instruction, rom, memory),
+
 
             // Unknown opcode
             _    => self.unknown(),
@@ -51,10 +68,12 @@ impl GameBoyCPU {
         operation
     }
 
-    fn load_X_Y(&mut self, instruction: u8, rom: &Vec<u8>, memory: &mut GameBoyMemory) -> String {
+    fn load_8(&mut self, instruction: u8, rom: &Vec<u8>, memory: &mut GameBoyMemory) -> String {
         match instruction {
+
             // Typical 8-bit loads
             i if 0x40 <= i && i <= 0x7F => { 
+
                 // Loading from which address?
                 let Y = match (instruction & 0xF) % 8 {
                     0x0 => self.get_B(),    // LD X, B
@@ -87,40 +106,76 @@ impl GameBoyCPU {
             }
             
             // Loads from A (indirect)
-            i if (i & 0xF == 2 || i & 0xF0 == 0xE0) && i != 0xF2 => {
-                let X = match (instruction & 0xF0) >> 4 {
-                    0x0 => self.get_BC(),    // LD (BC), A
-                    0x1 => self.get_DE(),    // LD (DE), A
-                    0x2 => {                // LD (HL+), A
-                        self.set_HL(self.get_HL() + 1);
-                        self.get_HL() - 1
-                    },
-                    0x3 => {                // LD (HL-), A
-                        self.set_HL(self.get_HL() - 1);
-                        self.get_HL() + 1
-                    },
-                    0xE => match instruction & 0xF {
-                        0x0 => {            // LD (a8), A
-                            self.set_PC(self.get_PC() + 1);
-                            0xFF00 + rom[self.get_PC() as usize] as u16
-                        },
-                        0x2 => 0xFF00 + self.get_C() as u16,    // LD (C), A
-                        0xA => {            // LD (a16), A
-                            self.set_PC(self.get_PC() + 2);
-                            ((rom[self.get_PC() as usize] as u16) << 8)
-                            + 
-                            (rom[self.get_PC() - 1 as usize]) as u16
-                        }.into(),
-                        _ => 0,  // Unknown
-                    }.into(),
-                    _ => 0, // Unknown
+            0x02 | 0x12 | 0x22 | 0x32 | 0xE0 | 0xE2 | 0xEA => {
+                let X = match instruction {
+                    0x02 => self.get_BC(),                   // X = (BC)
+                    0x12 => self.get_DE(),                   // X = (DE)
+                    0x22 => self.get_inc_HL(),               // X = (HL+)
+                    0x32 => self.get_dec_HL(),               // X = (HL-)
+                    0xE0 => 0xFF00 + self.get_8(rom) as u16, // X = (a8)
+                    0xE2 => 0xFF00 + self.get_C() as u16,    // X = (C)
+                    0xEA => self.get_16(rom),                // X = (a16)
+                       _ => 0,     // unknown 
                 };
-                memory.write(X as usize, self.get_A());
+                memory.write(X as usize, self.get_A());      // LD X, A
             }
-            _ => (),    // Unknown LD X, Y
-        }
 
+            // Loads from indirect
+            _ => {
+                let Y = match instruction {
+                    0x06 | 0x16 | 0x26 | 0x36 | 
+                    0x0E | 0x1E | 0x2E | 0x3E => self.get_8(rom),
+                    0x0A => memory.read(self.get_BC() as usize),
+                    0x1A => memory.read(self.get_DE() as usize),
+                    0x2A => memory.read(self.get_inc_HL() as usize),
+                    0x3A => memory.read(self.get_dec_HL() as usize),
+                    0xF0 => memory.read(0xFF00 + (self.get_8(rom) as u16) as usize), 
+                    0xF2 => memory.read(0xFF00 + (self.get_C() as u16) as usize),
+                    0xFA => memory.read(self.get_16(rom) as usize),
+                    _ => 0, // unknown
+                };
+
+               // Which address to load into?
+               match instruction {
+                    0x06 => self.set_B(Y),              // LD B, Y
+                    0x0E => self.set_C(Y),              // LD C, Y
+                    0x16 => self.set_D(Y),              // LD D, Y
+                    0x1E => self.set_E(Y),              // LD E, Y 
+                    0x26 => self.set_H(Y),              // LD H, Y
+                    0x2E => self.set_L(Y),              // LD L, Y 
+                    0x36 => memory.write(
+                                self.get_HL() as usize, // LD (HL), Y
+                                Y),
+                    _ =>    self.set_A(Y),              // LD A, Y
+               };
+            },
+        };
         String::from("LD X, Y")
+    }
+
+    fn load_16(&mut self, 
+               instruction: u8, 
+               rom: &Vec<u8>, 
+               memory: &mut GameBoyMemory) -> String {
+
+        match instruction {
+            0x01 => self.set_BC(self.get_16(&rom)),
+            0x08 => self.memory.write(
+                        self.get_16(&rom) as usize, 
+                        self.get_SP()
+                    ),
+            0x11 => self.set_DE(self.get_16(&rom)),
+            0x21 => self.set_HL(self.get_16(&rom)),
+            0x31 => self.set_SP(self.get_16(&rom)),
+            0xC1 => self.set_BC(self.pop_stack(memory)),
+            _ => () // Unknown
+        }
+        /*
+        0x01 | 0x08 | 0x11 | 0x21 | 0x31 | 
+        0xC1 | 0xD1 | 0xE1 | 0xF1 | 0xC5 | 
+        0xD5 | 0xE5 | 0xF5 | 0xF8 | 0xF9
+        */ 
+        String::from("LD X, Y (16)")
     }
 
     /* 
@@ -142,6 +197,16 @@ impl GameBoyCPU {
 
     pub fn get_HL(&self) -> u16 {
         self.registers.HL
+    }
+
+    pub fn get_inc_HL(&mut self) -> u16 {
+        self.set_HL(self.get_HL() + 1);
+        self.get_HL() - 1
+    }
+
+    pub fn get_dec_HL(&mut self) -> u16 {
+        self.set_HL(self.get_HL() - 1);
+        self.get_HL() + 1
     }
 
     pub fn get_SP(&self) -> u16 {
@@ -237,6 +302,25 @@ impl GameBoyCPU {
 
     pub fn set_L(&mut self, val: u8) {
         self.registers.HL = (self.registers.HL & 0xFF00) | val as u16;
+    }
+
+    pub fn get_8(&mut self, rom: &Vec<u8>) -> u8 {
+        self.set_PC(self.get_PC() + 1);
+        rom[self.get_PC() as usize]
+    }
+
+    pub fn get_16(&mut self, rom: &Vec<u8>) -> u16 {
+        self.set_PC(self.get_PC() + 2);
+        ((rom[self.get_PC() as usize] as u16) << 8)
+        +
+        rom[self.get_PC() - 1 as usize] as u16
+    }
+
+    pub fn pop_stack(&mut self, memory: &mut GameBoyMemory) -> u16 {
+        self.set_SP(self.get_SP() + 2);
+        ((memory.read((self.get_SP() - 2) as usize) as u16) << 8)
+        +
+        (memory.read((self.get_SP() - 1) as usize) as u16)
     }
 
     fn no_op(&mut self) -> String {

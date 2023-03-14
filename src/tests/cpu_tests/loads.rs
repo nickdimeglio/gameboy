@@ -10,6 +10,17 @@ mod tests {
     }
 
     #[test]
+    fn op_0x01() {
+        let (mut gb, rom) = setup();
+
+        // LD BC, d16
+        gb.cpu.set_PC(0x0);
+        assert_ne!(gb.cpu.get_BC(), 0x3322);
+        gb.cpu.execute(0x01, &rom, &mut gb.memory);
+        assert_eq!(gb.cpu.get_BC(), 0x3322);
+    }
+
+    #[test]
     fn op_0x06() {
         let (mut gb, rom) = setup();
 
@@ -18,6 +29,18 @@ mod tests {
         assert_ne!(gb.cpu.get_B(), 0x22);
         gb.cpu.execute(0x06, &rom, &mut gb.memory);
         assert_eq!(gb.cpu.get_B(), 0x22);
+    }
+
+    #[test]
+    fn op_0x08() {
+        let (mut gb, rom) = setup();
+
+        // LD (a16), SP
+        gb.cpu.set_PC(0x0); 
+        gb.cpu.set_SP(0x9876);
+        assert_ne!(gb.memory.read(0x3322), 0x9876);
+        gb.cpu.execute(0x08, &rom, &mut gb.memory);
+        assert_eq!(gb.memory.read(0x3322), 0x9876);
     }
 
     #[test]
@@ -41,6 +64,17 @@ mod tests {
         assert_ne!(gb.cpu.get_C(), 0x22);
         gb.cpu.execute(0x0E, &rom, &mut gb.memory);
         assert_eq!(gb.cpu.get_C(), 0x22);
+    }
+
+    #[test]
+    fn op_0x11() {
+        let (mut gb, rom) = setup();
+
+        // LD DE, d16
+        gb.cpu.set_PC(0x0);
+        assert_ne!(gb.cpu.get_DE(), 0x3322);
+        gb.cpu.execute(0x11, &rom, &mut gb.memory);
+        assert_eq!(gb.cpu.get_DE(), 0x3322);
     }
 
     #[test]
@@ -78,6 +112,17 @@ mod tests {
     }
 
     #[test]
+    fn op_0x21() {
+        let (mut gb, rom) = setup();
+
+        // LD HL, d16
+        gb.cpu.set_PC(0x0);
+        assert_ne!(gb.cpu.get_HL(), 0x3322);
+        gb.cpu.execute(0x21, &rom, &mut gb.memory);
+        assert_eq!(gb.cpu.get_HL(), 0x3322);
+    }
+
+    #[test]
     fn op_0x26() {
         let (mut gb, rom) = setup();
 
@@ -111,6 +156,17 @@ mod tests {
         assert_ne!(gb.cpu.get_L(), 0x22);
         gb.cpu.execute(0x2E, &rom, &mut gb.memory);
         assert_eq!(gb.cpu.get_L(), 0x22);
+    }
+
+    #[test]
+    fn op_0x31() {
+        let (mut gb, rom) = setup();
+
+        // LD SP, d16
+        gb.cpu.set_PC(0x0);
+        assert_ne!(gb.cpu.get_SP(), 0x3322);
+        gb.cpu.execute(0x31, &rom, &mut gb.memory);
+        assert_eq!(gb.cpu.get_SP(), 0x3322);
     }
 
     #[test]
@@ -533,6 +589,18 @@ mod tests {
         assert_eq!(gb.cpu.get_A(), gb.cpu.get_E());
     }
 
+    #[test]
+    fn op_0xC1() {
+        let (mut gb, rom) = setup();
+
+        // POP BC
+        gb.memory.write(0x2002, 0x12);
+        gb.memory.write(0x2001, 0x34);
+        gb.cpu.set_SP(0x2000);
+        assert_ne!(gb.cpu.get_BC(), 0x1234);
+        gb.cpu.execute(0xC1, &rom, &mut gb.memory);
+        assert_eq!(gb.cpu.get_BC(), 0x1234);
+    }
 
     /*  EIGHT BIT LOADS INTO H
      *

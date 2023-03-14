@@ -36,8 +36,8 @@ mod tests {
         assert_eq!("LD X, Y", gb.cpu.execute(0x12, &rom, &mut gb.memory));
         assert_eq!("LD X, Y", gb.cpu.execute(0x22, &rom, &mut gb.memory));
         assert_eq!("LD X, Y", gb.cpu.execute(0x32, &rom, &mut gb.memory));
+        assert_eq!("LD X, Y", gb.cpu.execute(0xE0, &rom, &mut gb.memory));
         assert_eq!("LD X, Y", gb.cpu.execute(0xE2, &rom, &mut gb.memory));
-        assert_eq!("LD X, Y", gb.cpu.execute(0xE1, &rom, &mut gb.memory));
         assert_eq!("LD X, Y", gb.cpu.execute(0xEA, &rom, &mut gb.memory));
     }
 
@@ -61,6 +61,26 @@ mod tests {
         assert_eq!("LD X, Y", gb.cpu.execute(0xF2, &rom, &mut gb.memory));
         assert_eq!("LD X, Y", gb.cpu.execute(0xFA, &rom, &mut gb.memory));
 
+    }
+
+    #[test]
+    fn loads_16() {
+        let (mut gb, rom) = setup();
+        assert_eq!("LD X, Y (16)", gb.cpu.execute(0x01, &rom, &mut gb.memory));
+        assert_eq!("LD X, Y (16)", gb.cpu.execute(0x08, &rom, &mut gb.memory));
+        assert_eq!("LD X, Y (16)", gb.cpu.execute(0x11, &rom, &mut gb.memory));
+        assert_eq!("LD X, Y (16)", gb.cpu.execute(0x21, &rom, &mut gb.memory));
+        assert_eq!("LD X, Y (16)", gb.cpu.execute(0x31, &rom, &mut gb.memory));
+        assert_eq!("LD X, Y (16)", gb.cpu.execute(0xC1, &rom, &mut gb.memory));
+        assert_eq!("LD X, Y (16)", gb.cpu.execute(0xD1, &rom, &mut gb.memory));
+        assert_eq!("LD X, Y (16)", gb.cpu.execute(0xE1, &rom, &mut gb.memory));
+        assert_eq!("LD X, Y (16)", gb.cpu.execute(0xF1, &rom, &mut gb.memory));
+        assert_eq!("LD X, Y (16)", gb.cpu.execute(0xC5, &rom, &mut gb.memory));
+        assert_eq!("LD X, Y (16)", gb.cpu.execute(0xD5, &rom, &mut gb.memory));
+        assert_eq!("LD X, Y (16)", gb.cpu.execute(0xE5, &rom, &mut gb.memory));
+        assert_eq!("LD X, Y (16)", gb.cpu.execute(0xF5, &rom, &mut gb.memory));
+        assert_eq!("LD X, Y (16)", gb.cpu.execute(0xF8, &rom, &mut gb.memory));
+        assert_eq!("LD X, Y (16)", gb.cpu.execute(0xF9, &rom, &mut gb.memory));
     }
 }
 
