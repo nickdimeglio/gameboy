@@ -158,6 +158,7 @@ impl GameBoyCPU {
                rom: &Vec<u8>, 
                memory: &mut GameBoyMemory) -> String {
 
+        /*
         match instruction {
             0x01 => self.set_BC(self.get_16(&rom)),
             0x08 => self.memory.write(
@@ -170,7 +171,6 @@ impl GameBoyCPU {
             0xC1 => self.set_BC(self.pop_stack(memory)),
             _ => () // Unknown
         }
-        /*
         0x01 | 0x08 | 0x11 | 0x21 | 0x31 | 
         0xC1 | 0xD1 | 0xE1 | 0xF1 | 0xC5 | 
         0xD5 | 0xE5 | 0xF5 | 0xF8 | 0xF9
