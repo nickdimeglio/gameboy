@@ -37,17 +37,12 @@ impl GameBoyCPU {
             0xCB => self.cb_prefix(),
 
             // 8-bit load/store/move
-            i if 0x40 <= i && i < 0x80
-                 ||
-                 (i & 0xF == 0x2 || i == 0xEA || i == 0xE0)
-                 ||
-                 (i & 0xF0 < 0x40 && (i & 0xF == 0x6 
-                                      || i & 0xF == 0xA 
-                                      || i & 0xF == 0xE))
-                 ||
-                 (i & 0xF0 == 0xF0 && (i & 0xF == 0x0
-                                       || i & 0xF == 0x2
-                                       || i & 0xF == 0xA))
+            i if (0x40 <= i && i < 0x80 && i != 0x76)
+                => self.load_8(instruction, rom, memory),
+
+            0x02 | 0x12 | 0x22 | 0x32 | 0x06 | 0x16 | 0x26 | 0x36 |
+            0x0A | 0x1A | 0x2A | 0x3A | 0x0E | 0x1E | 0x2E | 0x3E |
+            0xE0 | 0xF0 | 0xE2 | 0xF2 | 0xEA | 0xFA
                 => self.load_8(instruction, rom, memory),
 
             // 16-bit load/store/move
@@ -71,7 +66,7 @@ impl GameBoyCPU {
     fn load_8(&mut self, instruction: u8, rom: &Vec<u8>, memory: &mut GameBoyMemory) -> String {
         match instruction {
 
-            // Typical 8-bit loads
+            // Direct 8-bit loads
             i if 0x40 <= i && i <= 0x7F => { 
 
                 // Loading from which address?
@@ -106,6 +101,7 @@ impl GameBoyCPU {
             }
             
             // Loads from A (indirect)
+            //
             0x02 | 0x12 | 0x22 | 0x32 | 0xE0 | 0xE2 | 0xEA => {
                 let X = match instruction {
                     0x02 => self.get_BC(),                   // X = (BC)
@@ -120,7 +116,7 @@ impl GameBoyCPU {
                 memory.write(X as usize, self.get_A());      // LD X, A
             }
 
-            // Loads from indirect
+            // Indirect loads
             _ => {
                 let Y = match instruction {
                     0x06 | 0x16 | 0x26 | 0x36 | 
@@ -158,19 +154,39 @@ impl GameBoyCPU {
                rom: &Vec<u8>, 
                memory: &mut GameBoyMemory) -> String {
 
-        /*
         match instruction {
-            0x01 => self.set_BC(self.get_16(&rom)),
-            0x08 => self.memory.write(
-                        self.get_16(&rom) as usize, 
-                        self.get_SP()
-                    ),
-            0x11 => self.set_DE(self.get_16(&rom)),
-            0x21 => self.set_HL(self.get_16(&rom)),
-            0x31 => self.set_SP(self.get_16(&rom)),
-            0xC1 => self.set_BC(self.pop_stack(memory)),
+            0x01 => {
+                let nn = self.get_16(&rom);
+                self.set_BC(nn);
+            },
+            0x08 => {
+                let nn = self.get_16(&rom);
+                memory.write(nn as usize, (self.get_SP() & 0xFF) as u8);
+                memory.write((nn + 1) as usize, (self.get_SP() >> 8) as u8);
+            },
+            0x11 => {
+                let nn = self.get_16(&rom);
+                self.set_DE(nn);
+            },
+            0x21 => {
+                let nn = self.get_16(&rom);
+                self.set_HL(nn);
+            },
+            0x31 => {
+                let nn = self.get_16(&rom);
+                self.set_SP(nn);
+            },
+            0xC1 => {
+                let nn = self.pop_stack(memory);
+                self.set_BC(nn);
+            },
+            /*
+            0xD1 | 0xE1 | 0xF1 => {
+                let nn = self.pop_stack(memory);
+            */
             _ => () // Unknown
-        }
+        };
+        /*
         0x01 | 0x08 | 0x11 | 0x21 | 0x31 | 
         0xC1 | 0xD1 | 0xE1 | 0xF1 | 0xC5 | 
         0xD5 | 0xE5 | 0xF5 | 0xF8 | 0xF9
@@ -186,7 +202,7 @@ impl GameBoyCPU {
     pub fn get_AF(&self) -> u16 {
         self.registers.AF
     }
-
+    
     pub fn get_BC(&self) -> u16 {
         self.registers.BC
     }
@@ -244,6 +260,7 @@ impl GameBoyCPU {
     pub fn get_A(&self) -> u8 {
         (self.registers.AF >> 8) as u8
     }
+
     pub fn set_A(&mut self, val: u8) {
         self.registers.AF = ((val as u16) << 8) | (self.registers.AF & 0x00FF);
     }
@@ -318,9 +335,9 @@ impl GameBoyCPU {
 
     pub fn pop_stack(&mut self, memory: &mut GameBoyMemory) -> u16 {
         self.set_SP(self.get_SP() + 2);
-        ((memory.read((self.get_SP() - 2) as usize) as u16) << 8)
+        ((memory.read((self.get_SP() - 1) as usize) as u16) << 8)
         +
-        (memory.read((self.get_SP() - 1) as usize) as u16)
+        (memory.read((self.get_SP() - 2) as usize) as u16)
     }
 
     fn no_op(&mut self) -> String {

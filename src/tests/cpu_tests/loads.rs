@@ -31,19 +31,22 @@ mod tests {
         assert_eq!(gb.cpu.get_B(), 0x22);
     }
 
-    /*
     #[test]
     fn op_0x08() {
+        /* LD (a16), SP
+           3 byte, 5 cycles
+        */
         let (mut gb, rom) = setup();
 
-        // LD (a16), SP
         gb.cpu.set_PC(0x0); 
         gb.cpu.set_SP(0x9876);
-        assert_ne!(gb.memory.read(0x3322), 0x9876);
+        assert_ne!(gb.memory.read(0x3322), 0x76);
+        assert_ne!(gb.memory.read(0x3323), 0x98);
         gb.cpu.execute(0x08, &rom, &mut gb.memory);
-        assert_eq!(gb.memory.read(0x3322), 0x9876);
+        assert_eq!(gb.memory.read(0x3322), 0x76);
+        assert_eq!(gb.memory.read(0x3323), 0x98);
     }
-*/
+
     #[test]
     fn op_0x0A() {
         let (mut gb, rom) = setup();
@@ -590,17 +593,22 @@ mod tests {
         assert_eq!(gb.cpu.get_A(), gb.cpu.get_E());
     }
 
+    // POP BC
     #[test]
     fn op_0xC1() {
+        // Arrange
         let (mut gb, rom) = setup();
-
-        // POP BC
-        gb.memory.write(0x2002, 0x12);
-        gb.memory.write(0x2001, 0x34);
+        gb.memory.write(0x2001, 0x12);
+        gb.memory.write(0x2000, 0x34);
         gb.cpu.set_SP(0x2000);
         assert_ne!(gb.cpu.get_BC(), 0x1234);
+
+        // Act
         gb.cpu.execute(0xC1, &rom, &mut gb.memory);
-        assert_eq!(gb.cpu.get_BC(), 0x1234);
+
+        // Assert
+        assert_eq!(gb.cpu.get_BC(), 0x1234); 
+        assert_eq!(gb.cpu.get_SP(), 0x2002);
     }
 
     /*  EIGHT BIT LOADS INTO H
@@ -1060,7 +1068,7 @@ mod tests {
     }
 
     #[test]
-    fn load_indirect_A16_A() {
+    fn op_0xEA() {
         let (mut gb, rom) = setup();
 
         // LD (a16), A
