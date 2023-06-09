@@ -1,14 +1,14 @@
 use crate::CGB_WIDTH;
 use crate::CGB_HEIGHT;
 
-pub struct GameBoyScreen {
+pub struct Screen {
     pub width: usize,
     pub height: usize,
     pub pixels: Vec<u32>,
 }
     
-impl GameBoyScreen {
-    pub fn new() -> GameBoyScreen {
+impl Screen {
+    pub fn new() -> Screen {
         let mut pixels: Vec<u32> = Vec::from([0; CGB_WIDTH * CGB_HEIGHT]);
     
         // Initialize game boy screen with checkered pattern
@@ -20,7 +20,7 @@ impl GameBoyScreen {
             }
         }
         
-        GameBoyScreen { 
+        Screen { 
             width: CGB_WIDTH,
             height: CGB_HEIGHT,
             pixels: pixels,

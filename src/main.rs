@@ -10,8 +10,6 @@ const CGB_WIDTH: usize = 320;
 const CGB_HEIGHT: usize = 288;
 
 fn main() -> io::Result<()> {
-    let mut gameboy = GameBoy::new();
-
     // Initialize emulator window
     let mut window = Window::new(
         "Welcome to the Game Boy!",
@@ -30,12 +28,16 @@ fn main() -> io::Result<()> {
     let path = "./roms/pokemon-yellow.gbc";
     let rom = read(path)?;
 
+    let mut gameboy = GameBoy::new(rom);
+
     // Begin Fetch-Decode-Execute loop
     while window.is_open() && !window.is_key_down(Key::Escape) {
 
         // Fetch next instruction
-        gameboy.cpu.execute(rom[gameboy.cpu.get_PC()], &rom, &mut gameboy.memory);
-        gameboy.cpu.set_PC(gameboy.cpu.get_PC() + 1);
+        match gameboy.execute() {
+            Ok(_) => (),
+            Err(err) => println!("{err}")
+        }
 
         // TODO: invalid PC handling
 

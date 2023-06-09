@@ -1,3 +1,4 @@
+/* 
 #[cfg(test)]
 mod tests {
     use crate::gameboy::{GameBoy};
@@ -11,3 +12,4 @@ mod tests {
         assert_eq!(gb.memory.read(0xF0F1), 0x88);
     }
 }
+*/

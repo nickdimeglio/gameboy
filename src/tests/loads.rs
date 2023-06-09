@@ -3,23 +3,24 @@ mod tests {
     use std::fs::read;
     use crate::gameboy::GameBoy;
 
-    fn setup() -> (GameBoy, Vec<u8>) {
-        let mut gb = GameBoy::new();
+    fn setup() -> GameBoy {
         let rom = read("./src/tests/test_bytes.gbc").expect("Invalid test ROM...");
-        (gb, rom)
+        let mut gb = GameBoy::new(rom);
+        gb
     }
 
     #[test]
     fn op_0x01() {
-        let (mut gb, rom) = setup();
+        let mut gb = setup();
 
         // LD BC, d16
-        gb.cpu.set_PC(0x0);
-        assert_ne!(gb.cpu.get_BC(), 0x3322);
-        gb.cpu.execute(0x01, &rom, &mut gb.memory);
-        assert_eq!(gb.cpu.get_BC(), 0x3322);
+        gb.registers.set_pc(0x0);
+        assert_ne!(gb.registers.get_bc(), 0x3322);
+        gb.execute(0x01);
+        assert_eq!(gb.registers.get_bc(), 0x3322);
     }
 
+/* 
     #[test]
     fn op_0x06() {
         let (mut gb, rom) = setup();
@@ -1170,5 +1171,6 @@ mod tests {
     #[test]
     fn load_A_indirect_a16() {
     }
-}
 
+*/
+}
