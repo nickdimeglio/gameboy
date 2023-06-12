@@ -32,10 +32,10 @@ mod tests {
         // LD BC, d16
 
         // Arrange
-        let rom = read("./roms/tests/opcodes/op0x02.gbc").expect("Test ROM 0x02 not found");
+        let rom = read("./roms/tests/op0x02.gbc").expect("Test ROM 0x02 not found");
         let mut gb = GameBoy::new(rom);
         gb.registers.set_pc(0x0);
-        assert_ne!(gb.registers.get_bc(), 0xAABB);
+        assert_ne!(gb.registers.get_bc(), 0xBBAA);
 
         // Act
         match gb.execute() {
@@ -43,7 +43,7 @@ mod tests {
             Ok(opcode) => {
                 // Assert
                 assert_eq!(opcode, 0x02);
-                assert_eq!(gb.registers.get_bc(), 0xAABB);
+                assert_eq!(gb.registers.get_bc(), 0xBBAA);
                 assert_eq!(gb.registers.get_pc(), 0x1);
             }
         }
