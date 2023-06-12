@@ -3,21 +3,32 @@ mod tests {
     use std::fs::read;
     use crate::gameboy::GameBoy;
 
+    /*
     fn setup() -> GameBoy {
-        let rom = read("./src/tests/test_bytes.gbc").expect("Invalid test ROM...");
-        let mut gb = GameBoy::new(rom);
-        gb
     }
+    */
 
     #[test]
-    fn op_0x01() {
-        let mut gb = setup();
-
+    fn op_0x02() {
         // LD BC, d16
+
+        // Arrange
+        let rom = read("./roms/tests/opcodes/op0x02.gbc").expect("Invalid test ROM...");
+        let mut gb = GameBoy::new(rom);
         gb.registers.set_pc(0x0);
-        assert_ne!(gb.registers.get_bc(), 0x3322);
-        gb.execute(0x01);
-        assert_eq!(gb.registers.get_bc(), 0x3322);
+        assert_ne!(gb.registers.get_bc(), 0xAABB);
+        assert_eq!(gb.registers.get_pc(), 0x0);
+
+        // Act
+        match gb.execute() {
+            Err(e) => println!("Op 0x02 failed: {e}"),
+            Ok(opcode) => {
+                // Assert
+                assert_eq!(opcode, 0x02);
+                assert_eq!(gb.registers.get_bc(), 0xAABB);
+                assert_eq!(gb.registers.get_pc(), 0x1);
+            }
+        }
     }
 
 /* 

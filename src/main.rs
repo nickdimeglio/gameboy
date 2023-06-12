@@ -1,4 +1,5 @@
 #![allow(unused_mut)]
+#[allow(dead_code)]
 mod gameboy;
 mod tests;
 use std::fs::read;
@@ -38,8 +39,6 @@ fn main() -> io::Result<()> {
             Ok(_) => (),
             Err(err) => println!("{err}")
         }
-
-        // TODO: invalid PC handling
 
         // Resize screen if needed
         let new_size = (window.get_size().0, window.get_size().1);
