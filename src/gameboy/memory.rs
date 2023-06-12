@@ -1,3 +1,4 @@
+#[derive(Clone, Debug, PartialEq)]
 pub struct Memory {
     memory: [u8; 0xFFFF],
 }

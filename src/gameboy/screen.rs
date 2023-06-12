@@ -1,6 +1,7 @@
 use crate::CGB_WIDTH;
 use crate::CGB_HEIGHT;
 
+#[derive(Clone, Debug, PartialEq)]
 pub struct Screen {
     pub width: usize,
     pub height: usize,

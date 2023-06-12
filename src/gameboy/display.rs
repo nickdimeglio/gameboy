@@ -2,6 +2,7 @@ use crate::CGB_WIDTH;
 use crate::CGB_HEIGHT;
 use crate::gameboy::Screen;
 
+#[derive(Clone, Debug, PartialEq)]
 pub struct Display {
     pub width: usize,
     pub height: usize,

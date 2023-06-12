@@ -8,11 +8,12 @@ use crate::gameboy::screen::Screen;
 use crate::gameboy::memory::Memory;
 use crate::gameboy::registers::Registers;
 
+#[derive(Clone, Debug, PartialEq)]
 pub struct GameBoy {
     pub display: Display,
     pub screen: Screen,
     pub registers: Registers,
-    memory: Memory,
+    pub memory: Memory,
     rom: Vec<u8>,
     instruction: u8,
 }
