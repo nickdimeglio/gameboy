@@ -1,6 +1,6 @@
 use crate::CGB_WIDTH;
 use crate::CGB_HEIGHT;
-use crate::gameboy::GameBoyScreen;
+use crate::gameboy::Screen;
 
 pub struct Display {
     pub width: usize,
@@ -21,7 +21,7 @@ impl Display {
         self.pixels.resize(self.width * self.height, 0);
     }
     
-    pub fn update(&mut self, cgb_screen: &GameBoyScreen) {
+    pub fn update(&mut self, cgb_screen: &Screen) {
         // Update buffer
         for i in 0..(self.width * self.height) {
     

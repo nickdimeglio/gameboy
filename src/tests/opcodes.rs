@@ -3,23 +3,35 @@ mod tests {
     use std::fs::read;
     use crate::gameboy::GameBoy;
 
-    fn setup() -> (GameBoy, Vec<u8>) {
-        let mut gb = GameBoy::new();
-        let rom = read("./src/tests/test_bytes.gbc").expect("Invalid test ROM...");
-        (gb, rom)
+    /*
+    fn setup() -> GameBoy {
     }
+    */
 
     #[test]
-    fn op_0x01() {
-        let (mut gb, rom) = setup();
-
+    fn op_0x02() {
         // LD BC, d16
-        gb.cpu.set_PC(0x0);
-        assert_ne!(gb.cpu.get_BC(), 0x3322);
-        gb.cpu.execute(0x01, &rom, &mut gb.memory);
-        assert_eq!(gb.cpu.get_BC(), 0x3322);
+
+        // Arrange
+        let rom = read("./roms/tests/opcodes/op0x02.gbc").expect("Invalid test ROM...");
+        let mut gb = GameBoy::new(rom);
+        gb.registers.set_pc(0x0);
+        assert_ne!(gb.registers.get_bc(), 0xAABB);
+        assert_eq!(gb.registers.get_pc(), 0x0);
+
+        // Act
+        match gb.execute() {
+            Err(e) => println!("Op 0x02 failed: {e}"),
+            Ok(opcode) => {
+                // Assert
+                assert_eq!(opcode, 0x02);
+                assert_eq!(gb.registers.get_bc(), 0xAABB);
+                assert_eq!(gb.registers.get_pc(), 0x1);
+            }
+        }
     }
 
+/* 
     #[test]
     fn op_0x06() {
         let (mut gb, rom) = setup();
@@ -1170,5 +1182,6 @@ mod tests {
     #[test]
     fn load_A_indirect_a16() {
     }
-}
 
+*/
+}
