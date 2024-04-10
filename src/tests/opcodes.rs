@@ -2,13 +2,11 @@ use crate::gameboy::GameBoy;
 use std::fs::read;
 
 #[cfg(test)]
-
 fn setup(opcode: u16) -> GameBoy {
-    let mut rom_path = String::from("./roms/tests/op0x");
-    rom_path.push_str(&format!("{:0>2}", opcode));
-    rom_path.push_str(".gbc");
-
-    let rom: Vec<u8> = read(rom_path.clone()).expect(&format!("Test ROM {:x} not found at {}", opcode, rom_path));
+    let mut rom_path = format!("./roms/tests/op0x{opcode:0>2}.gb");
+    let rom: Vec<u8> = read(rom_path.clone()).expect(
+        &format!("Test ROM {opcode:x} not found at {rom_path}")
+    );
     let mut gb = GameBoy::new(rom);
     gb.registers.set_pc(0x000);
 
@@ -84,13 +82,13 @@ fn op_0x02() {
     assert_eq!(at_bc.unwrap(), gb.registers.get_a());
 
     assert_eq!(gb.registers.get_pc(), 0x1);
-    
 }
 
 #[test]
 fn op_0x03() {
-    // INC BC
-    // 1-byte, 8-cycle
+    /* INC BC
+     * 1-byte, 8-cycle
+     */
 
     // Arrange
     let mut gb = setup(0x03);
@@ -109,24 +107,57 @@ fn op_0x03() {
 }
 
 #[test]
-fn op_0x11() {
-    // LD DE, d16
-    // 3-byte, 12-cycle
+fn op_0x04() {
+    /* INC B
+     * 1-byte, 4-cycle
+     * Z 0 H -
+     */
 
-    // Arrange
-    let rom = read("./roms/tests/op0x11.gbc").expect("Test ROM 0x11 not found");
-    let mut gb = GameBoy::new(rom);
-    gb.registers.set_pc(0x0);
-    assert_ne!(gb.registers.get_de(), 0xBBAA);
+    // Arrange (half-carry)
+    let mut gb = setup(0x04);
+    gb.registers.set_n_flag(0x1);
+    gb.registers.set_z_flag(0x1);
+    gb.registers.set_b(0xBF);
 
-    // Act
-    let result = gb.execute();
+    // Act (half-carry)
+    let mut result = gb.execute();
 
-    // Assert
-    assert!(result.is_ok(), "Op 0x11 failed: {}", result.unwrap_err());
-    let opcode = result.unwrap();
+    // Assert (half-carry)
+    assert!(result.is_ok(), "Op 0x04 failed: {}", result.unwrap_err());
+    let mut opcode = result.unwrap();
+    assert_eq!(opcode, 0x04);
+    assert_eq!(gb.registers.get_b(), 0xC0);
+    assert_eq!(gb.registers.get_z_flag(), 0x0);
+    assert_eq!(gb.registers.get_n_flag(), 0x0);
+    assert_eq!(gb.registers.get_h_flag(), 0x1);
+    assert_eq!(gb.registers.get_pc(), 0x001);
 
-    assert_eq!(opcode, 0x11);
-    assert_eq!(gb.registers.get_de(), 0xBBAA);
-    assert_eq!(gb.registers.get_pc(), 0x0003);
+    // Arrange (no half-carry)
+    gb.registers.set_n_flag(0x1);
+    gb.registers.set_z_flag(0x1);
+    gb.registers.set_b(0xFB);
+    
+    // Act (no half-carry)
+    result = gb.execute(); 
+    assert!(result.is_ok(), "Op 0x04 failed: {}", result.unwrap_err());
+    opcode = result.unwrap();
+    assert_eq!(opcode, 0x04);
+    assert_eq!(gb.registers.get_b(), 0xFC);
+    assert_eq!(gb.registers.get_z_flag(), 0x0);
+    assert_eq!(gb.registers.get_n_flag(), 0x0);
+    assert_eq!(gb.registers.get_h_flag(), 0x0);
+
+    // Arrange (zero)
+    gb.registers.set_n_flag(0x1);
+    gb.registers.set_b(0xFF);
+    
+    // Act (no half-carry)
+    result = gb.execute(); 
+    assert!(result.is_ok(), "Op 0x04 failed: {}", result.unwrap_err());
+    opcode = result.unwrap();
+    assert_eq!(opcode, 0x04);
+    assert_eq!(gb.registers.get_b(), 0x00);
+    assert_eq!(gb.registers.get_z_flag(), 0x1);
+    assert_eq!(gb.registers.get_n_flag(), 0x0);
+    assert_eq!(gb.registers.get_h_flag(), 0x1);
 }
